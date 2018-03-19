@@ -51,7 +51,7 @@ class ProgressBar():
 	def __exit__(self, type, val, tb):
 		print("{:.2f}%\t|{}=|".format(100.0,self.l*'='));
 
-srcdir = options.sdir; #take the foil name from S-source
+srcdir = options.sdir.replace('\\','/'); #take the foil name from S-source
 while srcdir[-1] == '/':
 	srcdir = srcdir[:-1];
 pathc = srcdir.split('/');
