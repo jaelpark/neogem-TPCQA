@@ -59,16 +59,18 @@ pathc = srcdir.split('/');
 foiln = options.name;
 if foiln is None:
 	for p in reversed(pathc):
-		if any([s in p for s in ("I_","O1_","O2_","O3_")]):
+		if any([s in p for s in
+			("I_","I-","O1_","O1-","O2_","O2-","O3_","O3-")]):
 			foiln = p;
 			break;
 	else:
 		opt.error("Unable to extract foil name. Use -n to manually specify the name.");
 
-	for s in ["_S","_U","-"]:
+	for s in ["_S","_U","-s","-u","-"]:
 		try:
 			u = foiln.index(s);
 			foiln = foiln[:u];
+			break;
 		except ValueError:
 			pass;
 if len(foiln) == 0:
@@ -76,7 +78,7 @@ if len(foiln) == 0:
 
 t = options.type;
 if t is None:
-	if "I_" in foiln:
+	if any([s in foiln for s in ("I_","I-")]):
 		t = "IROC";
 	else:
 		o = foiln.index('O');
