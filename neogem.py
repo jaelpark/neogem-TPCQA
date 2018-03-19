@@ -49,20 +49,34 @@ class ProgressBar():
 srcdir = options.sdir; #take the foil name from S-source
 while srcdir[-1] == '/':
 	srcdir = srcdir[:-1];
-foiln = srcdir.split('/')[-1] if options.name is None else options.name;
+pathc = srcdir.split('/');
+
+foiln = options.name;
 if foiln is None:
-	foiln = srcdir.split('/')[-1]; #pathc
+	for p in reversed(pathc):
+		if any([s in p for s in ("I_","O1_","O2_","O3_")]):
+			foiln = p;
+			break;
+	else:
+		opt.error("Unable to extract foil name. Use -n to manually specify the name.");
+
 	for s in ["_S","_U","-"]:
 		try:
 			u = foiln.index(s);
-			foiln = foiln[:su];
+			foiln = foiln[:u];
 		except ValueError:
 			pass;
 if len(foiln) == 0:
 	foiln = "output";
 
-o = srcdir.index('O');
-t = srcdir[o:o+2] if options.type is None else options.type;
+t = options.type;
+if t is None:
+	if "I_" in foiln:
+		t = "IROC";
+	else:
+		o = foiln.index('O');
+		t = foiln[o:o+2];
+
 try:
 	nl = {
 		"IROC":np.array([467.0,496.5]),
