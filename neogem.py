@@ -6,11 +6,15 @@ import glob
 from scipy import ndimage,stats
 from scipy.optimize import curve_fit
 
+import matplotlib.cm as pltcm
 import matplotlib.pyplot as plt
 #from matplotlib.colors import LogNorm
 from matplotlib.backends.backend_pdf import PdfPages
 
 from optparse import OptionParser
+
+import parula #matlab colormap used in previous foil plots
+pltcm.register_cmap(name="parula",cmap=parula.parula_map);
 
 hg = [{},{}]; #histograms
 ad = [{},{}]; #data arrays
@@ -26,6 +30,7 @@ opt.add_option("-U","--U-dir",default=None,metavar="DIR",action="store",type="st
 opt.add_option("-t","--type",default=None,metavar="TYPE",action="store",type="string",dest="type",help="Force foil type to TYPE=IROC/O1/O2/O3. By default, type is recognized from the source directory name.");
 opt.add_option("-o","--output-dir",default="./",metavar="DIR",action="store",type="string",dest="outdir",help="Destination directory for the output files (report and maps) [default: %default]");
 opt.add_option("-n","--name",default=None,metavar="NAME",action="store",type="string",dest="name",help="Name for the generated files. If unspecified, an attempt will be made to acquire the name from segmented side source path.");
+opt.add_option("-c","--color-map",default="parula",metavar="CMAP",type="string",dest="colormap",help="Name of the colormap to use from the list of matplotlib colormaps. [default: %default]");
 opt.add_option("-q","--quiet",action="store_true",dest="quiet",help="Quiet mode. Do not show plots.");
 (options,args) = opt.parse_args();
 
@@ -177,7 +182,7 @@ def renderFoilPlot(fig, ax, h, title, cdfrange = True):
 	ax.set_title(title,fontsize=8);
 	#ax.set_xlabel("x (mm)",fontsize=6);
 	#ax.set_ylabel("y (mm)",fontsize=6);
-	cmap = ax.imshow(h,interpolation="nearest",cmap="rainbow",extent=(0,nl[0],0,nl[1]),
+	cmap = ax.imshow(h,interpolation="nearest",cmap=options.colormap,extent=(0,nl[0],0,nl[1]),
 		vmin=umin,vmax=umax);
 	ax.plot([0,63],[0,nl[1]],color="black");
 	ax.plot([nl[0],nl[0]-63],[0,nl[1]],color="black");
