@@ -191,6 +191,7 @@ def renderFoilPlot(fig, ax, h, title, cdfrange = True, zrnan = False):
 		umin,umax = None,None;
 	
 	if zrnan:
+		h = h.copy();
 		h[h < 1e-6] = np.nan;
 
 	ax.set_title(title,fontsize=8);
