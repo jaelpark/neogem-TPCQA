@@ -169,7 +169,7 @@ with ProgressBar(70) as pb:
 		he["dstd"] = np.sqrt(0.25*hg[u]["outer"]["dstd"]**2+0.25*hg[u]["inner"]["dstd"]**2);
 		he["dstd"][np.isnan(he["dstd"])] = 0.0;
 
-def renderFoilPlot(fig, ax, h, title, cdfrange = True):
+def renderFoilPlot(fig, ax, h, title, cdfrange = True, zrnan = False):
 	if cdfrange:
 		hf = h.flatten();
 		#estimate optimal plotting range by removing peaks
@@ -180,6 +180,9 @@ def renderFoilPlot(fig, ax, h, title, cdfrange = True):
 		umin,umax = bins[a],bins[b];
 	else:
 		umin,umax = None,None;
+	
+	if zrnan:
+		h[h < 1e-6] = np.nan;
 
 	ax.set_title(title,fontsize=8);
 	#ax.set_xlabel("x (mm)",fontsize=6);
@@ -194,6 +197,11 @@ def renderFoilPlot(fig, ax, h, title, cdfrange = True):
 	cbar.ax.tick_params(labelsize=6);
 
 	ax.autoscale(False);
+
+def renderPointOverlay(ax, x, y):
+	x = nl[1]*(x-edgesx[0])/(edgesx[-1]-edgesx[0]);
+	y = nl[0]*(y-edgesy[0])/(edgesy[-1]-edgesy[0]);
+	ax.plot(y,nl[1]-x,marker="o",linestyle="none",color="red",mfc="none");
 
 def gauss(x, *p):
 	A,mu,sigma = p;
@@ -222,7 +230,9 @@ with PdfPages(options.outdir+foiln+".pdf") as pdf:
 		("blocked","count","Blocked N (S)",False),("blocked","count","Blocked N (U)",False)]):
 		h = hg[i%2][r[0]][r[1]];
 		q = np.unravel_index(i,(4,2));
-		renderFoilPlot(fig,ax[q],h,r[2],r[3]);
+		renderFoilPlot(fig,ax[q],h,r[2],r[3],not r[3]);
+		if not r[3]:
+			renderPointOverlay(ax[q],ad[i%2][r[0]]["x"],ad[i%2][r[0]]["y"]);
 	plt.savefig(pdf,format="pdf");
 
 	fig,ax = plt.subplots(4,2,figsize=(0.707*8,8));
