@@ -16,6 +16,8 @@ from optparse import OptionParser
 import parula #matlab colormap used in previous foil plots
 pltcm.register_cmap(name="parula",cmap=parula.parula_map);
 
+from os import get_terminal_size
+
 hg = [{},{}]; #histograms
 ad = [{},{}]; #data arrays
 
@@ -40,8 +42,15 @@ if options.udir is None:
 	opt.error("U-side source unspecified.");
 
 class ProgressBar():
-	def __init__(self, l):
-		self.l = l;
+	def __init__(self, l = None):
+		if l is None:
+			try:
+				ts,_ = get_terminal_size();
+				self.l = ts-12;
+			except OSError:
+				self.l = 50;
+		else:
+			self.l = l;
 	def __enter__(self):
 		return self;
 	def update(self, r):
@@ -103,7 +112,7 @@ def groupCounter(hf):
 print("Loading sources...");
 for u,srcdir in enumerate([options.sdir,options.udir]):
 	print("[{}]".format(srcdir));
-	with ProgressBar(70) as pb:
+	with ProgressBar() as pb:
 		hfls = glob.glob(srcdir+"/*.h5");
 		if len(hfls) == 0:
 			opt.error("No source files (*.h5) found.");
@@ -135,7 +144,7 @@ for u,srcdir in enumerate([options.sdir,options.udir]):
 			hf.close();
 
 print("Booking...");
-with ProgressBar(70) as pb:
+with ProgressBar() as pb:
 	for u in range(0,2):
 		for i,name in enumerate(gnames):
 			a = ad[u][name];
@@ -211,40 +220,31 @@ options.outdir += "/";
 print("Generating output... (dst: {})".format(options.outdir));
 with PdfPages(options.outdir+foiln+".pdf") as pdf:
 
-	fig,ax = plt.subplots(4,2,figsize=(0.707*8,8));
-	for i,r in enumerate([
-		("inner","diam","Inner Diameter (S)"),("inner","diam","Inner Diameter (U)"),
+	for fi in [
+		[("inner","diam","Inner Diameter (S)"),("inner","diam","Inner Diameter (U)"),
 		("inner","dstd","Inner Diameter Std. Dev (S)"),("inner","dstd","Inner Diameter Std. Dev (U)"),
 		("outer","diam","Outer Diameter (S)"),("outer","diam","Outer Diameter (U)"),
-		("outer","dstd","Outer Diameter Std. Dev (S)"),("outer","dstd","Outer Diameter Std. Dev (U)")]):
-		h = hg[i%2][r[0]][r[1]];
-		q = np.unravel_index(i,(4,2));
-		renderFoilPlot(fig,ax[q],h,r[2]);
-	plt.savefig(pdf,format="pdf");
+		("outer","dstd","Outer Diameter Std. Dev (S)"),("outer","dstd","Outer Diameter Std. Dev (U)")],
 
-	fig,ax = plt.subplots(4,2,figsize=(0.707*8,8));
-	for i,r in enumerate([
-		("inner","count","Inner N (S)",True),("inner","count","Inner N (U)",True),#("outer","count","Outer N"),
+		[("inner","count","Inner N (S)"),("inner","count","Inner N (U)"),
 		("defect","count","Defect N (S)",False),("defect","count","Defect N (U)",False),
 		("etching","count","Etching N (S)",False),("etching","count","Etching N (U)",False),
-		("blocked","count","Blocked N (S)",False),("blocked","count","Blocked N (U)",False)]):
-		h = hg[i%2][r[0]][r[1]];
-		q = np.unravel_index(i,(4,2));
-		renderFoilPlot(fig,ax[q],h,r[2],r[3],not r[3]);
-		if not r[3]:
-			renderPointOverlay(ax[q],ad[i%2][r[0]]["x"],ad[i%2][r[0]]["y"]);
-	plt.savefig(pdf,format="pdf");
+		("blocked","count","Blocked N (S)",False),("blocked","count","Blocked N (U)",False)],
 
-	fig,ax = plt.subplots(4,2,figsize=(0.707*8,8));
-	for i,r in enumerate([
-		("rim","diam","Rim Diameter (S)"),("rim","diam","Rim Diameter (U)"),
+		[("rim","diam","Rim Diameter (S)"),("rim","diam","Rim Diameter (U)"),
 		("rim","dstd","Rim Diameter Std. Dev (S)"),("rim","dstd","Rim Diameter Std. Dev (U)"),
 		("inner","fl","Foreground Light (S)"),("inner","fl","Foreground Light (U)"),
-		("inner","flstd","Foreground Light Std. Dev (S)"),("inner","flstd","Foreground Light Std. Dev (U)")]):
-		h = hg[i%2][r[0]][r[1]];
-		q = np.unravel_index(i,(4,2));
-		renderFoilPlot(fig,ax[q],h,r[2]);
-	plt.savefig(pdf,format="pdf");
+		("inner","flstd","Foreground Light Std. Dev (S)"),("inner","flstd","Foreground Light Std. Dev (U)")]
+		]:
+		fig,ax = plt.subplots(4,2,figsize=(0.707*8,8));
+		for i,r in enumerate(fi):
+			h = hg[i%2][r[0]][r[1]];
+			q = np.unravel_index(i,(4,2));
+			b = r[3] if len(r) > 3 else True;
+			renderFoilPlot(fig,ax[q],h,r[2],b,not b);
+			if not b:
+				renderPointOverlay(ax[q],ad[i%2][r[0]]["x"],ad[i%2][r[0]]["y"]);
+		plt.savefig(pdf,format="pdf");
 
 	#m = np.fromfunction(lambda i,j: np.vectorize(Get)(i,j),(x,y),dtype=float);
 	#h = hg[name]["diam"];
