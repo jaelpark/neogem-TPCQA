@@ -310,19 +310,15 @@ with PdfPages(options.outdir+foiln+".pdf") as pdf:
 binc = 0.5*(bins_i[0][:-1]+bins_i[0][1:]);
 with open(options.outdir+foiln+"_profile.txt","w") as pf:
 	for i,_ in enumerate(binc):
-		pf.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\n"
-			.format(binc[i],yr[0][i],yr[1][i],yi[0][i],yi[1][i],yo[0][i],yo[1][i]));
+		pf.write("\t".join(["{:4f}".format(f).rstrip('0').rstrip('.') for f in [
+			binc[i],yr[0][i],yr[1][i],yi[0][i],yi[1][i],yo[0][i],yo[1][i]
+		]])+"\n");
 
 with open(options.outdir+foiln+"_map.txt","w") as mf:
-	for (i,j),_ in np.ndenumerate(hg[0]["inner"]["count"].T):
-		mf.write("{}\t{}\t\
-			{}\t{}\t{}\t{}\t{}\
-			{}\t{}\t{}\t{}\t{}\
-			{}\t{}\t{}\t{}\t{}\
-			{}\t{}\t{}\t{}\t{}\
-			{}\t{}\t{}\t{}\t\
-			{}\t{}\n"
-			.format(float(i)*nl[0]/nb[0]+0.5/nl[0],float(j)*nl[0]/nb[0]+0.5/nl[0],
+	#for (i,j),_ in np.ndenumerate(hg[0]["inner"]["count"].T):
+	for (j,i),_ in np.ndenumerate(hg[0]["inner"]["count"]):
+		mf.write("\t".join(["{:.4f}".format(f).rstrip('0').rstrip('.') for f in [
+			float(j)*nl[1]/nb[1]+0.5/nl[1],float(i)*nl[0]/nb[0]+0.5/nl[0],
 			hg[0]["inner"]["diam"][j][i],hg[0]["outer"]["diam"][j][i],
 			hg[0]["blocked"]["diam"][j][i],hg[0]["defect"]["diam"][j][i],hg[0]["etching"]["diam"][j][i],
 			hg[1]["inner"]["diam"][j][i],hg[1]["outer"]["diam"][j][i],
@@ -332,7 +328,8 @@ with open(options.outdir+foiln+"_map.txt","w") as mf:
 			hg[1]["inner"]["count"][j][i],hg[1]["outer"]["count"][j][i],
 			hg[1]["blocked"]["count"][j][i],hg[1]["defect"]["count"][j][i],hg[1]["etching"]["count"][j][i],
 			hg[0]["inner"]["dstd"][j][i],hg[0]["outer"]["dstd"][j][i],hg[1]["inner"]["dstd"][j][i],hg[1]["outer"]["dstd"][j][i],
-			hg[0]["inner"]["fl"][j][i],hg[1]["inner"]["fl"][j][i]));
+			hg[0]["inner"]["fl"][j][i],hg[1]["inner"]["fl"][j][i]
+		]])+"\n");
 
 if not options.quiet:
 	plt.show();
