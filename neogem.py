@@ -100,6 +100,8 @@ try:
 		"O2":np.array([726.2,350.0]),
 		"O3":np.array([867.0,379.0])
 	}[t];
+	el = {"IROC":88,"O1":63,"O2":63,"O3":63}[t];
+
 	nb = [int(np.ceil(n)) for n in nl];
 	print("Foil/{}: assuming type {}.".format(foiln,t));
 except KeyError:
@@ -199,8 +201,8 @@ def renderFoilPlot(fig, ax, h, title, cdfrange = True, zrnan = False):
 	#ax.set_ylabel("y (mm)",fontsize=6);
 	cmap = ax.imshow(h,interpolation="nearest",cmap=options.colormap,extent=(0,nl[0],0,nl[1]),
 		vmin=umin,vmax=umax);
-	ax.plot([0,63],[0,nl[1]],color="black");
-	ax.plot([nl[0],nl[0]-63],[0,nl[1]],color="black");
+	ax.plot([0,el],[0,nl[1]],color="black");
+	ax.plot([nl[0],nl[0]-el],[0,nl[1]],color="black");
 	[t.label.set_fontsize(6) for t in ax.xaxis.get_major_ticks()];
 	[t.label.set_fontsize(6) for t in ax.yaxis.get_major_ticks()];
 	cbar = fig.colorbar(cmap,ax=ax);
@@ -315,10 +317,9 @@ with open(options.outdir+foiln+"_profile.txt","w") as pf:
 		]])+"\n");
 
 with open(options.outdir+foiln+"_map.txt","w") as mf:
-	#for (i,j),_ in np.ndenumerate(hg[0]["inner"]["count"].T):
-	for (j,i),_ in np.ndenumerate(hg[0]["inner"]["count"]):
+	for (j,i),_ in np.ndenumerate(np.flip(hg[0]["inner"]["count"],axis=1)):
 		mf.write("\t".join(["{:.4f}".format(f).rstrip('0').rstrip('.') for f in [
-			float(j)*nl[1]/nb[1]+0.5/nl[1],float(i)*nl[0]/nb[0]+0.5/nl[0],
+			float(i)*nl[0]/nb[0]+0.5/nl[0],float(j)*nl[1]/nb[1]+0.5/nl[1],
 			hg[0]["inner"]["diam"][j][i],hg[0]["outer"]["diam"][j][i],
 			hg[0]["blocked"]["diam"][j][i],hg[0]["defect"]["diam"][j][i],hg[0]["etching"]["diam"][j][i],
 			hg[1]["inner"]["diam"][j][i],hg[1]["outer"]["diam"][j][i],
